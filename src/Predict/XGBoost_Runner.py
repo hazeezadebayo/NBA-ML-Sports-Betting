@@ -16,8 +16,13 @@ xgb_uo = xgb.Booster()
 xgb_uo.load_model('Models/XGBoost_Models/XGBoost_54.8%_UO-8.json')
 
 
+
 def xgb_runner(data, todays_games_uo, frame_ml, games, home_team_odds, away_team_odds):
     ml_predictions_array = []
+
+    #i added this line
+    winners_list = []
+    losers_list = []
 
     for row in data:
         ml_predictions_array.append(xgb_ml.predict(xgb.DMatrix(np.array([row]))))
@@ -54,6 +59,11 @@ def xgb_runner(data, todays_games_uo, frame_ml, games, home_team_odds, away_team
                     Fore.GREEN + home_team + Style.RESET_ALL + Fore.CYAN + f" ({winner_confidence}%)" + Style.RESET_ALL + ' vs ' + Fore.RED + away_team + Style.RESET_ALL + ': ' +
                     Fore.BLUE + 'OVER ' + Style.RESET_ALL + str(
                         todays_games_uo[count]) + Style.RESET_ALL + Fore.CYAN + f" ({un_confidence}%)" + Style.RESET_ALL)
+
+            # i added this line
+            winners_list.append(home_team)
+            losers_list.append(away_team)
+
         else:
             winner_confidence = round(winner_confidence[0][0] * 100, 1)
             if under_over == 0:
@@ -68,7 +78,40 @@ def xgb_runner(data, todays_games_uo, frame_ml, games, home_team_odds, away_team
                     Fore.RED + home_team + Style.RESET_ALL + ' vs ' + Fore.GREEN + away_team + Style.RESET_ALL + Fore.CYAN + f" ({winner_confidence}%)" + Style.RESET_ALL + ': ' +
                     Fore.BLUE + 'OVER ' + Style.RESET_ALL + str(
                         todays_games_uo[count]) + Style.RESET_ALL + Fore.CYAN + f" ({un_confidence}%)" + Style.RESET_ALL)
+
+            # i added this line
+            winners_list.append(away_team)
+            losers_list.append(home_team)
+
+
         count += 1
+    
+
+
+
+
+    # i added this line
+    print("-----------------------Game Summary--------------------")
+    import os
+    # Get the current working directory
+    cwd = os.getcwd()
+    # Define the file name
+    file_name = "game_summary_xgboost.txt"
+    # Construct the full file path
+    full_path = os.path.join(cwd, file_name)
+    # Open the file and write the data
+    with open(full_path, "w") as file:
+        file.write("Winners List:\n")
+        for winner in winners_list:
+            file.write(winner + "\n")
+        file.write("\nLosers List:\n")
+        for loser in losers_list:
+            file.write(loser + "\n")
+    print("winners_list: ", winners_list)
+    print("losers_list: ", losers_list)
+
+
+
     print("--------------------Expected Value---------------------")
     count = 0
     for game in games:
